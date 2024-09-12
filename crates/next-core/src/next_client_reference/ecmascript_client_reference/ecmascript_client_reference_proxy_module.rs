@@ -67,6 +67,9 @@ impl EcmascriptClientReferenceProxyModule {
 
         let server_module_path = &*self.server_module_ident.path().to_string().await?;
 
+        let is_async = self.client_module.get_async_module().await?.is_some();
+        let async_op = if is_async { "async" } else { "" };
+
         // Adapted from https://github.com/facebook/react/blob/c5b9375767e2c4102d7e5559d383523736f1c902/packages/react-server-dom-webpack/src/ReactFlightWebpackNodeLoader.js#L323-L354
         if let EcmascriptExports::EsmExports(exports) = &*self.client_module.get_exports().await? {
             let exports = exports.expand_exports().await?;
@@ -91,6 +94,7 @@ impl EcmascriptClientReferenceProxyModule {
                                 function() {{ throw new Error({call_err}); }},
                                 {server_module_path},
                                 "default",
+                                {is_async},
                             );
                         "#,
                         call_err = StringifyJs(&format!(
@@ -100,6 +104,7 @@ impl EcmascriptClientReferenceProxyModule {
                              Component or passed to props of a Client Component."
                         )),
                         server_module_path = StringifyJs(server_module_path),
+                        is_async = is_async,
                     )?;
                 } else {
                     writedoc!(
@@ -109,6 +114,7 @@ impl EcmascriptClientReferenceProxyModule {
                                 function() {{ throw new Error({call_err}); }},
                                 {server_module_path},
                                 {export_name_str},
+                                {is_async},
                             );
                         "#,
                         export_name = export_name,
@@ -120,6 +126,7 @@ impl EcmascriptClientReferenceProxyModule {
                         )),
                         server_module_path = StringifyJs(server_module_path),
                         export_name_str = StringifyJs(export_name),
+                        is_async = is_async,
                     )?;
                 }
             }
@@ -129,9 +136,10 @@ impl EcmascriptClientReferenceProxyModule {
                 r#"
                     const {{ createClientModuleProxy }} = require("react-server-dom-turbopack/server.edge");
 
-                    __turbopack_export_namespace__(createClientModuleProxy({server_module_path}));
+                    __turbopack_export_namespace__({async_op} createClientModuleProxy({server_module_path}));
                 "#,
-                server_module_path = StringifyJs(server_module_path)
+                async_op = async_op,
+                server_module_path = StringifyJs(server_module_path),
             )?;
         };
 
