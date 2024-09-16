@@ -2696,13 +2696,12 @@ exports.decodeReply = function (body, turbopackMap, options) {
 exports.registerClientReference = function (
   proxyImplementation,
   id,
-  exportName,
-  async
+  exportName
 ) {
   return registerClientReferenceImpl(
     proxyImplementation,
     id + "#" + exportName,
-    async || false
+    !1
   );
 };
 exports.registerServerReference = function (reference, id, exportName) {
