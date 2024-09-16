@@ -1269,7 +1269,7 @@ function serializeClientReference(
         );
     }
     var JSCompiler_inline_result =
-      !0 === clientReference.$$async
+      resolvedModuleData.async === true || clientReference.$$async === true
         ? [resolvedModuleData.id, resolvedModuleData.chunks, existingId, 1]
         : [resolvedModuleData.id, resolvedModuleData.chunks, existingId];
     request.pendingChunks++;

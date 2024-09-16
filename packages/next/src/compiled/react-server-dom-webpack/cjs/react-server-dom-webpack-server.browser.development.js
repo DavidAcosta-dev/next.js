@@ -1256,8 +1256,16 @@
                 '" in the React Client Manifest. This is probably a bug in the React Server Components bundler.'
             );
         }
+        if (resolvedModuleData.async === true && clientReference.$$async === true) {
+          throw new Error(
+            'The module "' +
+              modulePath +
+              '" is marked as an async ESM module but was loaded as a CJS proxy. ' +
+              'This is probably a bug in the React Server Components bundler.',
+          );
+        }
         var clientReferenceMetadata =
-          !0 === clientReference.$$async
+          resolvedModuleData.async === true || clientReference.$$async === true
             ? [resolvedModuleData.id, resolvedModuleData.chunks, existingId, 1]
             : [resolvedModuleData.id, resolvedModuleData.chunks, existingId];
         request.pendingChunks++;
